@@ -47,8 +47,8 @@ forgetProfunctor r = record {
                        profunctorIdentity = λ _ → refl;
                        profunctorCompose = λ f g h i x → refl }
 
-forget : ∀ {I i o a} → LensLike (Forget (i a)) I i o → o a → i a
-forget {a = a} l = l {a} {a} id
+view : ∀ {I i o a} → LensLike (Forget (i a)) I i o → o a → i a
+view {a = a} l = l {a} {a} id
 
 Iso : (I : Set₁) (i o : I → Set) → Set₁
 Iso = Family IsProfunctor
