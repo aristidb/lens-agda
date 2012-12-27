@@ -7,7 +7,7 @@ LensLike : (k : Set → Set → Set) (I : Set₁) (i o : I → Set) → Set₁
 LensLike k _ i o = ∀ {a b} → k (i a) (i b) → k (o a) (o b)
 
 Family : (constraint : (Set → Set → Set) → Set₁) (I : Set₁) (i o : I → Set) → Set₁
-Family constraint I i o = ∀ k → constraint k → LensLike k I i o
+Family constraint I i o = ∀ {k} → {{c : constraint k}} → LensLike k I i o
 
 record IsProfunctor (p : Set → Set → Set) : Set₁ where
   field
@@ -26,15 +26,16 @@ record IsProfunctor (p : Set → Set → Set) : Set₁ where
                          (f : b → c) (g : a → b) (h : d → e) (i : c → d) →
                          ∀ x → dimap (f ∘ g) (h ∘ i) x ≡ (dimap g h ∘ dimap f i) x
 
-Review : (a b : Set) → Set
-Review a b = b
+record Review (a b : Set) : Set where
+  constructor rev
+  field get : b
 
 review : ∀ {I i o} → LensLike Review I i o → ∀ {a} → i a → o a
-review l = λ {a} → l {a} {a}
+review l {a} x = Review.get (l {a} {a} (rev x))
 
 reviewProfunctor : IsProfunctor Review
 reviewProfunctor = record {
-                     dimap = λ f g → g;
+                     dimap = λ _ g → rev ∘ g ∘ Review.get;
                      profunctorIdentity = λ _ → refl;
                      profunctorCompose = λ f g h i x → refl }
 
