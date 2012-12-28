@@ -30,12 +30,13 @@ reviewProfunctor = record {
                      profunctorIdentity = λ _ → refl;
                      profunctorCompose = λ _ → refl }
 
-Forget : (r a b : Set) → Set
-Forget r a b = a → r
+record Forget (r a b : Set) : Set where
+  constructor forget
+  field f : a → r
 
 forgetProfunctor : ∀ r → IsProfunctor (Forget r)
 forgetProfunctor r = record {
-                       dimap = λ f g p → p ∘ f;
+                       dimap = λ f g p → forget (Forget.f p ∘ f);
                        profunctorIdentity = λ _ → refl;
                        profunctorCompose = λ _ → refl }
 

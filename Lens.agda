@@ -20,7 +20,7 @@ review : ∀ {I i o a} → (l : LensLike Review I i o) → i a → o a
 review {a = a} l x = Review.get (LensLike.f l {a} {a} (rev x))
 
 view : ∀ {I i o a} → LensLike (Forget (i a)) I i o → o a → i a
-view {a = a} (ll l) = l {a} {a} id
+view {i = i} {a = a} (ll l) = Forget.f (l {a} {a} (forget id))
 
 Iso : (I : Set₁) (i o : I → Set) → Set₁
 Iso = Family IsProfunctor
@@ -33,8 +33,11 @@ runIso′ : ∀ {I i o} → Iso I i o → ∀ {a b} → Exchange (i a) (i b) (o 
 runIso′ x = LensLike.f (x {{exchangeProfunctor _ _}}) (exch id id)
 
 runIso : ∀ {I i o} → Iso I i o → (∀ {a} → o a → i a) × (∀ {a} → i a → o a)
-runIso {I} x = (λ {a} → Exchange.buy (runIso′ x {a} {a})) , (λ {a} → Exchange.sell (runIso′ x {a} {a}))
+runIso {I} x = (λ {a} → Exchange.buy (runIso′ x {a} {a})) ,
+                 (λ {a} → Exchange.sell (runIso′ x {a} {a}))
 
 isosym : ∀ {I i o} → Iso I i o → Iso I o i
-isosym iso {k} {{profunctor}} = ll (λ x → {!LensLike.f (iso {k} {{profunctor}})!})
-  where open IsProfunctor profunctor
+isosym = uncurry iso ∘ swap ∘ runIso
+
+isoId : ∀ {I i} → Iso I i i
+isoId = iso id id
