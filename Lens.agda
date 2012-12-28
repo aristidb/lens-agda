@@ -29,12 +29,16 @@ iso : ∀ {I i o} → (∀ {a} → o a → i a) → (∀ {a} → i a → o a) �
 iso x y {k} {{profunctor}} = ll (dimap x y)
   where open IsProfunctor profunctor
 
-runIso′ : ∀ {I i o} → Iso I i o → ∀ {a b} → Exchange (i a) (i b) (o a) (o b)
+isoE : ∀ {I i o} → (∀ {a} → Exchange (i a) (i a) (o a) (o a)) → Iso I i o
+isoE e {{profunctor}} = ll (dimap (Exchange.buy e) (Exchange.sell e))
+  where open IsProfunctor profunctor
+
+runIso′ : ∀ {I i o} → Iso I i o → ∀ {a} → Exchange (i a) (i a) (o a) (o a)
 runIso′ x = LensLike.f (x {{exchangeProfunctor _ _}}) (exch id id)
 
 runIso : ∀ {I i o} → Iso I i o → (∀ {a} → o a → i a) × (∀ {a} → i a → o a)
-runIso {I} x = (λ {a} → Exchange.buy (runIso′ x {a} {a})) ,
-                 (λ {a} → Exchange.sell (runIso′ x {a} {a}))
+runIso {I} x = (λ {a} → Exchange.buy (runIso′ x {a})) ,
+                 (λ {a} → Exchange.sell (runIso′ x {a}))
 
 isosym : ∀ {I i o} → Iso I i o → Iso I o i
 isosym = uncurry iso ∘ swap ∘ runIso
